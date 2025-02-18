@@ -1,3 +1,4 @@
+import User from "../models/user.model.js";
 import { deleteImage, uploadImage } from "../utilities/Cloudinary.utilities.js";
 import Book from "./book.model.js";
 
@@ -97,5 +98,31 @@ export const removeBookById = async (req, res) => {
     return res
       .status(500)
       .json({ message: "Failed to delete book", error: error.message });
+  }
+};
+
+export const analytics = async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (user.role === "customer") {
+      return res.status(404).json({ message: "unauthorized" });
+    }
+    const totalbooks = await Book.find({ seller: userId }).countDocuments();
+    const soldBooks = await Order.find({ "products.productId": { $in: totalbooks } && { status: "delivered" } }).countDocuments();
+    const returnedBooks = await Order.find({ "products.productId": { $in: totalbooks } && { status: "returned" } }).countDocuments();
+    const totalEarning = await Order.aggregate([ { $match: { "products.productId": { $in: totalbooks }, status: "delivered" } }, { $unwind: "$products" }, { $match: { "products.productId": { $in: totalbooks } } }, { $group: { _id: null, totalEarnings: { $sum: "$products.price"  } } }
+    ]);
+
+    return res.status(200).json({
+      analytics: {totalbooks , soldBooks, returnedBooks, totalEarning },
+      message: "Analytics fetched successfully",
+    });
+  } catch (error) {
+    console.error("Error fetching analytics", error);
+    return res
+      .status(500)
+      .json({ message: "Failed to fetch analytics", error: error.message });
   }
 };

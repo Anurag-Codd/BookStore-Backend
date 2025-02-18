@@ -32,15 +32,15 @@ const userSchema = new Schema(
     address: {
       street: String,
       locality: String,
+      landmark: String,
       city: String,
       state: String,
       zipcode: Number,
       country: String,
-      landmark: String,
     },
     role: {
       type: String,
-      enum: ["user", "seller", "admin"],
+      enum: ["customer", "seller", "admin"],
       required: true,
     },
     isVerified: {
