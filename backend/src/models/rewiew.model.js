@@ -9,6 +9,11 @@ const reviewSchema = new Schema(
       ref: "User",
       required: true,
     },
+    bookId: {
+      type: Schema.Types.ObjectId,
+      ref: "Book",
+      required: true,
+    },
     review: {
       type: String,
       required: true,

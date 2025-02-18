@@ -3,9 +3,9 @@ import Book from "./book.model";
 export const fetchAllBooks = async (req, res) => {
   try {
     const books = await Book.find();
-    res.status(200).json({ books, message: "Books fetched successfully" });
+    return res.status(200).json({ books, message: "Books fetched successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Failed to fetch books" });
+    return res.status(500).json({ message: "Failed to fetch books" });
   }
 };
 
@@ -16,29 +16,29 @@ export const fetchBookById = async (req, res) => {
     if (!book) {
       return res.status(404).json({ message: "Book not found!" });
     }
-    res.status(200).json({ book, message: "Book fetched successfully" });
+    return res.status(200).json({ book, message: "Book fetched successfully" });
   } catch (error) {
     console.error("Error fetching book", error);
-    res.status(500).json({ message: "Failed to fetch book" });
+    return res.status(500).json({ message: "Failed to fetch book" });
   }
 };
 
-export const updateBookById = async (req, res) => {
+export const filterProduct = async (req, res) => {
+  const { genre, name } = req.body;
+  if (!genre || !name) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
   try {
-    const { id } = req.params;
-    const updatedBook = await Book.findByIdAndUpdate(id, req.body, {
-      new: true,
+    const books = await Book.find({
+      $or: [
+        { title: { $regex: name, $options: "i" } },
+        { genre: { $in: genre } }
+      ]
     });
-    if (!updatedBook) {
-      return res.status(404).send({ message: "Book not found!" });
-    }
-    res
-      .status(200)
-      .send({ message: "Book updated successfully", book: updatedBook });
+    return res.status(200).json({ books, message: "Books fetched successfully" });
   } catch (error) {
-    console.error("Error updating book", error);
-    res.status(500).send({ message: "Failed to update book" });
+    console.error("Error fetching books", error);
+    return res.status(500).json({ message: "Failed to fetch books" });
   }
 };
-
 
